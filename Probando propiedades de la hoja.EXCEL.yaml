@@ -1,0 +1,80 @@
+name: Probando propiedades de la hoja
+description: Ejemplo para cambiar propiedades de la hoja
+host: EXCEL
+api_set: {}
+script:
+  content: |
+    $("#Insertar-hoja").click(() => tryCatch(Insertarhoja));
+    $("#Eliminar-hoja").click(() => tryCatch(Eliminarhoja));
+    $("#Renombrar-hoja").click(() => tryCatch(Renombrarhoja));
+
+    async function Insertarhoja() {
+      await Excel.run(async (context) => {
+        const hojanueva = context.workbook.worksheets.add();
+        hojanueva.name = "Mi hoja";
+      });
+    }
+
+    async function Eliminarhoja() {
+      await Excel.run(async (context) => {
+        const hojas = context.workbook.worksheets;
+
+        hojas.load("items");
+        await context.sync();
+
+        if (hojas.items.length > 1) {
+          const hojaactiva = hojas.getActiveWorksheet();
+          hojaactiva.delete();
+          //  context.workbook.worksheets.getItem("Hoja4").delete();
+        } else {
+          console.log("Solo hay una hoja, no puedes eliminarla");
+        }
+      });
+    }
+
+    async function Renombrarhoja() {
+      await Excel.run(async (context) => {
+        const mihojaactiva = context.workbook.worksheets.getActiveWorksheet();
+        mihojaactiva.name = "Nuevo nombre";
+      });
+    }
+
+    /** Default helper for invoking an action and handling errors. */
+    async function tryCatch(callback) {
+      try {
+        await callback();
+      } catch (error) {
+        // Note: In a production add-in, you'd want to notify the user through your add-in's UI.
+        console.error(error);
+      }
+    }
+  language: typescript
+template:
+  content: "<section class=\"ms-font-m\">\n\t<p>Probando propiedades de las hojas del libro.</p>\n</section>\n\n<section class=\"samples ms-font-m\">\n\t<h3>Presione el bóton de su elección</h3>\n\t<button id=\"Insertar-hoja\" class=\"ms-Button\">\n        <span class=\"ms-Button-label\">Insertar hoja</span>\n    </button>\n\t<p>\n\t\t<button id=\"Eliminar-hoja\" class=\"ms-Button\">\n        <span class=\"ms-Button-label\">Eliminar hoja</span>\n    </button>\n\t\t<p>\n\t\t\t<button id=\"Renombrar-hoja\" class=\"ms-Button\">\n        <span class=\"ms-Button-label\">Renombrar hoja</span>\n    </button>\n\t\t\t<p>\n\n</section>"
+  language: html
+style:
+  content: |
+    section.samples {
+        margin-top: 20px;
+    }
+
+    section.samples .ms-Button, section.setup .ms-Button {
+       background-color: blue;
+        display: block;
+        margin-bottom: 5px;
+        margin-left: 20px;
+        min-width: 80px;
+    }
+  language: css
+libraries: |
+  https://appsforoffice.microsoft.com/lib/1/hosted/office.js
+  @types/office-js
+
+  office-ui-fabric-js@1.4.0/dist/css/fabric.min.css
+  office-ui-fabric-js@1.4.0/dist/css/fabric.components.min.css
+
+  core-js@2.4.1/client/core.min.js
+  @types/core-js
+
+  jquery@3.1.1
+  @types/jquery@3.3.1
